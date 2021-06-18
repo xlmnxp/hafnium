@@ -25,8 +25,8 @@ fn forward_stream(server: &TcpStream, mut client: TcpStream) {
 }
 
 fn main() -> std::io::Result<()> {
-    let server_listener = TcpListener::bind("0.0.0.0:8000")?;
-    let client_listener = TcpListener::bind("0.0.0.0:80")?;
+    let server_listener = TcpListener::bind("0.0.0.0:2822")?;
+    let client_listener = TcpListener::bind("0.0.0.0:1411")?;
 
     // FIXME:   when server disconnect and connected again,
     //          it cannot receive or send message to client
