@@ -1,41 +1,30 @@
-use std::io::{Read, Write};
-use std::net::{TcpListener, TcpStream};
+#[macro_use] extern crate log;
+mod utils;
+use std::io;
+use std::net::{TcpListener};
+use std::thread;
 
-fn forward_stream(server: &TcpStream, mut client: TcpStream) {
-    let mut server = server.try_clone().unwrap();
-    // full-duplex
-    std::thread::spawn(move || {
-        let mut buffer: [u8; 2048] = [0; 2048];
-        let mut _server = server.try_clone().unwrap();
-        let mut _client = client.try_clone().unwrap();
-        std::thread::spawn(move || loop {
-            if &_server.read(&mut buffer).unwrap() == &0 {
-                break;
-            }
-            _client.write(&mut buffer).unwrap();
-        });
-        loop {
-            buffer = [0; 2048];
-            if client.read(&mut buffer).unwrap() == 0 {
-                break
-            }
-            &server.write(&mut buffer);
-        }
-    });
-}
-
-fn main() -> std::io::Result<()> {
+fn main() -> io::Result<()> {
+    utils::setup();
     let server_listener = TcpListener::bind("0.0.0.0:2822")?;
     let client_listener = TcpListener::bind("0.0.0.0:1411")?;
-
-    // FIXME:   when server disconnect and connected again,
-    //          it cannot receive or send message to client
-    for server in server_listener.incoming() {
-        let server = server.unwrap();
-        let client_listener = client_listener.try_clone().unwrap();
-        std::thread::spawn(move || for client in client_listener.incoming() {
-            forward_stream(&server, client.unwrap());
-        });  
+    info!("hafnium is ready, client can connect client to {}", server_listener.local_addr()?);
+    for incoming_server_stream in server_listener.incoming() {
+        let incoming_server_stream = incoming_server_stream?;
+        let client_listener = client_listener.try_clone()?;
+        info!("server {} connected", incoming_server_stream.peer_addr()?);
+        thread::spawn(move || -> io::Result<()> {
+            for incoming_client_steam in client_listener.incoming() {
+                let incoming_server_stream = incoming_server_stream.try_clone()?;
+                thread::spawn(move || {
+                    let incoming_client_steam = incoming_client_steam?;
+                    info!("client {} connected to server {}", incoming_client_steam.peer_addr()?, incoming_server_stream.peer_addr()?);
+                    utils::forward_duplex_stream(incoming_server_stream, incoming_client_steam)
+                });
+            }
+            Ok(())
+        });
     }
+
     Ok(())
 }
