@@ -6,7 +6,6 @@ use std::net::TcpStream;
 use std::sync::Arc;
 use std::thread;
 
-
 pub fn setup() {
     let logger_file = File::create("hafnium.log").unwrap();
     CombinedLogger::init(
@@ -20,24 +19,23 @@ pub fn setup() {
 }
 
 // forward full-duplex
-pub fn forward_duplex_stream(server: TcpStream, client: TcpStream) -> io::Result<()> {
-    let server = Arc::new(server);
-    let client = Arc::new(client);
-    let mut server_rw = server.try_clone()?;
-    let mut client_rw = client.try_clone()?;
+pub fn forward_duplex_stream(first_stream: TcpStream, second_stream: TcpStream) -> io::Result<()> {
+    let first_stream_reader = Arc::new(first_stream);
+    let second_stream_reader = Arc::new(second_stream);
+    let mut first_stream_writer = first_stream_reader.try_clone()?;
+    let mut second_stream_writer = second_stream_reader.try_clone()?;
 
     let forward_threads = vec![
-        thread::spawn(move || {
-            io::copy(&mut server.as_ref(), &mut client.as_ref()).unwrap()
+        thread::spawn(move || match io::copy(&mut first_stream_reader.as_ref(), &mut second_stream_writer) {
+            _ => return
         }),
-        thread::spawn(move || {
-            io::copy(&mut client_rw, &mut server_rw).unwrap()
+        thread::spawn(move || match io::copy(&mut second_stream_reader.as_ref(), &mut first_stream_writer) {
+            _ => return
         }),
     ];
 
     for thread in forward_threads {
         thread.join().unwrap();
     }
-
     Ok(())
 }
