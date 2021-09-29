@@ -20,7 +20,8 @@ impl Client {
         let second_stream_reader = Arc::new(to);
         let mut first_stream_writer = first_stream_reader.try_clone()?;
         let mut second_stream_writer = second_stream_reader.try_clone()?;
-    
+        
+        info!("socket connect {:#?}", self.socket.peer_addr().unwrap());
         let forward_threads = vec![
             thread::spawn(move || match copy(&mut first_stream_reader.as_ref(), &mut second_stream_writer) {
                 _ => {
