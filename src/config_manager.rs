@@ -19,6 +19,7 @@ pub fn generate_key_pair_and_save() {
         let private_key = base58::ToBase58::to_base58(private_key_raw.to_bytes().as_slice()).to_string();
 
         std::fs::write(FILE_NAME, format!("private_key = \"{}\"", private_key)).unwrap();
+        println!("Key pair generated and saved");
     } else {
         println!("Key pair already exists");
     }
@@ -31,13 +32,13 @@ pub fn get_value(key: &str) -> toml::Value {
 }
 
 pub fn get_public_key() -> String {
-    let private_key = encryption::get_public_key();
-    base58::ToBase58::to_base58(CompressedPoint::from(private_key).as_slice()).to_string()
+    let public_key = encryption::get_public_key();
+    base58::ToBase58::to_base58(CompressedPoint::from(public_key).as_slice()).to_string()
 }
 
-// pub fn set_value(key: &str, value: &str) {
-//     let mut config = read_config();
-//     config.as_table_mut().unwrap().insert(key.to_string(), toml::Value::String(value.to_string()));
+pub fn set_value(key: &str, value: &str) {
+    let mut config = read_config();
+    config.as_table_mut().unwrap().insert(key.to_string(), toml::Value::String(value.to_string()));
 
-//     std::fs::write(FILE_NAME, toml::to_string(&config).unwrap()).unwrap();
-// }
+    std::fs::write(FILE_NAME, toml::to_string(&config).unwrap()).unwrap();
+}

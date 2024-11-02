@@ -37,7 +37,8 @@ enum Commands {
 #[derive(Args)]
 struct ConnectArgs {
     remote_address: Option<String>,
-    remote_port: Option<u16>
+    remote_port: Option<u16>,
+    remote_public_key: Option<String>
 }
 
 #[tokio::main]
@@ -58,7 +59,6 @@ async fn main() {
                 server.listener().await;
             }.await;
         },
-
         Commands::Connect(args) => {
             async {
                 let client = HfClient::new();

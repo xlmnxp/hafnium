@@ -1,5 +1,7 @@
 use tokio::{io::AsyncReadExt, net::TcpListener};
 
+use crate::encryption;
+
 pub struct PortForwarding {
     local_port: u16,
     remote_port: u16,
