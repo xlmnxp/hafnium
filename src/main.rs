@@ -4,6 +4,7 @@ mod config_manager;
 mod encryption;
 mod server;
 mod client;
+mod daemon;
 
 use {
     server::HfServer,
@@ -27,7 +28,7 @@ enum Commands {
     /// Get the public key
     GetSelf,
 
-    /// Start the server
+    /// Start the daemon
     Start,
 
     /// Connect to a remote server
@@ -53,17 +54,13 @@ async fn main() {
             println!("Public Key: {}", get_public_key());
         }
         Commands::Start => {
-            async {
-                let mut server = HfServer::new();
-    
-                server.listener().await;
-            }.await;
+            daemon::start().await;
         },
         Commands::Connect(args) => {
             async {
-                let client = HfClient::new();
+                let mut client = HfClient::new();
 
-                client.connect(args.remote_address.clone().expect("missing remote address"), args.remote_port.clone().expect("missing remote port")).await;
+                client.connect(args.remote_address.clone().expect("missing remote address"), args.remote_port.clone().expect("missing remote port")).await.expect("Cannot connect to remote server");
             }.await;
         }
     }
