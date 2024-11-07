@@ -3,6 +3,10 @@ name = "hf"
 version = "0.1.0"
 authors = ["Salem Yaslem <s@sy.sa>"]
 edition = "2018"
+license-file = "LICENSE"
+description = "A simple and secure port forward reverse proxy."
+repository = "https://github.com/xlmnxp/hafnium"
+readme = "README.md"
 
 [dependencies]
 anyhow = "1.0.92"

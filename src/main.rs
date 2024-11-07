@@ -1,16 +1,13 @@
 use config_manager::get_public_key;
 
+mod client;
 mod config_manager;
+mod daemon;
 mod encryption;
 mod server;
-mod client;
-mod daemon;
 
-use {
-    server::HfServer,
-    client::HfClient,
-};
 use clap::{Args, Parser, Subcommand};
+use client::HfClient;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -32,14 +29,14 @@ enum Commands {
     Start,
 
     /// Connect to a remote server
-    Connect(ConnectArgs)
+    Connect(ConnectArgs),
 }
 
 #[derive(Args)]
 struct ConnectArgs {
     remote_address: Option<String>,
     remote_port: Option<u16>,
-    remote_public_key: Option<String>
+    remote_public_key: Option<String>,
 }
 
 #[tokio::main]
@@ -54,14 +51,18 @@ async fn main() {
             println!("Public Key: {}", get_public_key());
         }
         Commands::Start => {
-            daemon::start().await;
-        },
+            daemon::start().await.expect("Cannot start daemon");
+        }
         Commands::Connect(args) => {
-            async {
-                let mut client = HfClient::new();
+            let mut client = HfClient::new();
 
-                client.connect(args.remote_address.clone().expect("missing remote address"), args.remote_port.clone().expect("missing remote port")).await.expect("Cannot connect to remote server");
-            }.await;
+            client
+                .connect(
+                    args.remote_address.clone().expect("missing remote address"),
+                    args.remote_port.clone().expect("missing remote port"),
+                )
+                .await
+                .expect("Cannot connect to remote server");
         }
     }
 }
