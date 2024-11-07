@@ -514,6 +514,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "hafnium"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "base58",
+ "chacha20poly1305",
+ "clap",
+ "p256",
+ "rand_core",
+ "rustls",
+ "rustls-pki-types",
+ "tokio",
+ "tokio-rustls",
+ "toml",
+ "webpki-roots",
+]
+
+[[package]]
 name = "hashbrown"
 version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -530,24 +548,6 @@ name = "hermit-abi"
 version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d231dfb89cfffdbc30e7fc41579ed6066ad03abda9e567ccafae602b97ec5024"
-
-[[package]]
-name = "hf"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "base58",
- "chacha20poly1305",
- "clap",
- "p256",
- "rand_core",
- "rustls",
- "rustls-pki-types",
- "tokio",
- "tokio-rustls",
- "toml",
- "webpki-roots",
-]
 
 [[package]]
 name = "hkdf"
