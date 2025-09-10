@@ -1,0 +1,31 @@
+[package]
+name = "hafnium"
+version = "0.1.0"
+authors = ["Salem Yaslem <s@sy.sa>"]
+edition = "2018"
+license-file = "LICENSE"
+description = "A simple and secure port forward reverse proxy."
+repository = "https://github.com/xlmnxp/hafnium"
+readme = "README.md"
+
+[[bin]]
+name = "hf"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1.0.92"
+base58 = "0.2.0"
+chacha20poly1305 = "0.10.1"
+clap = { version = "4.5.20", features = ["derive"] }
+daemonize = "0.5.0"
+nix = { version = "0.26.1", features = ["signal"] }
+p256 = { version = "0.13.2", features = ["ecdh"] }
+rand_core = { version = "0.6.4", features = ["getrandom"] }
+rustls = "0.23.16"
+rustls-pki-types = "1.10.0"
+tokio = {version = "1.0.1", features = ["full"]}
+tokio-rustls = "0.26.0"
+toml = "0.8.19"
+webpki-roots = "0.26.6"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
