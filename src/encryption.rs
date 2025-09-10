@@ -8,7 +8,7 @@ use chacha20poly1305::{
 };
 
 pub struct EphemeralSecret {
-    scalar: NonZeroScalar,
+    pub scalar: NonZeroScalar,
 }
 
 impl EphemeralSecret {
@@ -26,11 +26,11 @@ impl EphemeralSecret {
         EphemeralSecret { scalar }
     }
 
-    fn public_key(&self) -> PublicKey<NistP256> {
+    pub fn public_key(&self) -> PublicKey<NistP256> {
         PublicKey::from_secret_scalar(&self.scalar)
     }
 
-    fn diffie_hellman(&self, public_key: &PublicKey<NistP256>) -> SharedSecret<NistP256> {
+    pub fn diffie_hellman(&self, public_key: &PublicKey<NistP256>) -> SharedSecret<NistP256> {
         diffie_hellman(self.scalar, public_key.as_affine())
     }
 }

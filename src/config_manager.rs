@@ -69,3 +69,12 @@ pub fn get_trusted_peers() -> Vec<String> {
     let trusted_peers = config.get("trusted_peers").unwrap().as_array().unwrap();
     trusted_peers.iter().map(|v| v.as_str().unwrap().to_string()).collect()
 }
+
+pub fn remove_trusted_peer(peer: &str) {
+    let mut config = read_config();
+
+    let trusted_peers = config.get_mut("trusted_peers").unwrap().as_array_mut().unwrap();
+    trusted_peers.retain(|v| v.as_str().unwrap() != peer);
+
+    std::fs::write(FILE_NAME, toml::to_string(&config).unwrap()).unwrap();
+}

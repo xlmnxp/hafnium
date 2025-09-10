@@ -1,0 +1,36 @@
+[Unit]
+Description=Hafnium Reverse Proxy Daemon
+Documentation=https://github.com/xlmnxp/hafnium
+After=network.target
+Wants=network.target
+
+[Service]
+Type=notify
+User=hafnium
+Group=hafnium
+WorkingDirectory=/var/lib/hafnium
+ExecStart=/usr/local/bin/hf daemon start
+ExecStop=/usr/local/bin/hf daemon stop
+ExecReload=/usr/local/bin/hf daemon restart
+PIDFile=/var/run/hafnium.pid
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=hafnium
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/hafnium /var/run /var/log
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+
+[Install]
+WantedBy=multi-user.target

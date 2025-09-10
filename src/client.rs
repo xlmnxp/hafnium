@@ -1,6 +1,9 @@
 use crate::server::{Peer, PortForwarding};
+use crate::handshake::{HandshakeClient, send_encrypted_message, receive_encrypted_message};
+use p256::CompressedPoint;
 use std::sync::{Arc, Mutex};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::net::TcpStream;
 pub struct HfClient {
     remote_peers: Arc<Mutex<Vec<Peer>>>,
     forward_ports: Arc<Mutex<Vec<PortForwarding>>>,
@@ -18,20 +21,44 @@ impl HfClient {
         &mut self,
         remote_addr: String,
         remote_port: u16,
+        expected_server_public_key: String,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        // Connect through daemon instead of direct TCP
-        let mut socket = tokio::net::UnixStream::connect("./hafnium.sock").await?;
+        // Connect directly to the remote server
+        let server_addr = format!("{}:{}", remote_addr, remote_port);
+        let mut stream = TcpStream::connect(&server_addr).await?;
+        
+        println!("Connected to server at {}", server_addr);
 
-        // Send connect command to daemon
-        let cmd = format!("CONNECT {} {}", remote_addr, remote_port);
-        socket.write_all(cmd.as_bytes()).await?;
+        // Perform handshake
+        let handshake_client = HandshakeClient::new();
+        let handshake_result = handshake_client.perform_handshake(&mut stream).await?;
+        
+        // Verify server public key
+        let received_server_key = base58::ToBase58::to_base58(CompressedPoint::from(handshake_result.peer_public_key).as_slice());
+        if received_server_key != expected_server_public_key {
+            return Err(format!("Server public key mismatch! Expected: {}, Received: {}", 
+                              expected_server_public_key, received_server_key).into());
+        }
+        
+        println!("Handshake successful! Server public key verified: {}", received_server_key);
+
+        // Send a test message
+        let test_message = "Hello from Hafnium client!";
+        send_encrypted_message(&mut stream, test_message.as_bytes(), &handshake_result.peer_public_key).await?;
+        println!("Sent encrypted message: {}", test_message);
+
+        // Wait for response
+        let response = receive_encrypted_message(&mut stream, &handshake_result.peer_public_key).await?;
+        if let Ok(response_str) = String::from_utf8(response) {
+            println!("Received encrypted response: {}", response_str);
+        }
 
         Ok(())
     }
 }
 
 async fn handle_connection(
-    client: &mut HfClient,
+    _client: &mut HfClient,
     mut socket: tokio::net::TcpStream,
 ) -> Result<(), Box<dyn std::error::Error>> {
     tokio::spawn(async move {
